@@ -4,11 +4,12 @@ from datetime import datetime
 DB_NAME = "incidents.db"
 
 
-# ---------------- INIT ----------------
+# ---------------- INIT DB ----------------
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
+    # INCIDENT TABLE
     cur.execute("""
     CREATE TABLE IF NOT EXISTS incidents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,12 +22,23 @@ def init_db():
     )
     """)
 
+    # AUDIT LOG TABLE
     cur.execute("""
     CREATE TABLE IF NOT EXISTS audit_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user TEXT,
         action TEXT,
+        timestamp TEXT
+    )
+    """)
+
+    # 🆕 DOCTOR REVIEW TABLE (NEW)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS doctor_reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         incident_id INTEGER,
+        doctor TEXT,
+        notes TEXT,
         timestamp TEXT
     )
     """)
@@ -35,21 +47,19 @@ def init_db():
     conn.close()
 
 
-# ---------------- INCIDENTS ----------------
+# ---------------- ADD INCIDENT ----------------
 def add_incident(data):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO incidents (
-            resident_name, incident_type, severity, description, status, time
-        )
+        INSERT INTO incidents (resident_name, incident_type, severity, description, status, time)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (
         data.get("resident_name"),
         data.get("incident_type"),
-        data.get("severity", "LOW"),
-        data.get("description", ""),
+        data.get("severity"),
+        data.get("description"),
         "OPEN",
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ))
@@ -58,17 +68,19 @@ def add_incident(data):
     conn.close()
 
 
+# ---------------- GET INCIDENTS ----------------
 def get_all_incidents():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM incidents ORDER BY id DESC")
+    cur.execute("SELECT * FROM incidents")
     rows = cur.fetchall()
-
     conn.close()
 
-    return [
-        {
+    incidents = []
+
+    for r in rows:
+        incidents.append({
             "id": r[0],
             "resident_name": r[1],
             "incident_type": r[2],
@@ -76,11 +88,12 @@ def get_all_incidents():
             "description": r[4],
             "status": r[5],
             "time": r[6]
-        }
-        for r in rows
-    ]
+        })
+
+    return incidents
 
 
+# ---------------- DELETE INCIDENT ----------------
 def delete_incident_db(incident_id):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -91,18 +104,17 @@ def delete_incident_db(incident_id):
     conn.close()
 
 
-# ---------------- AUDIT ----------------
-def add_audit_log(user, action, incident_id=None):
+# ---------------- AUDIT LOG ----------------
+def add_audit_log(user, action):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO audit_logs (user, action, incident_id, timestamp)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO audit_logs (user, action, timestamp)
+        VALUES (?, ?, ?)
     """, (
         user,
         action,
-        incident_id,
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ))
 
@@ -114,18 +126,64 @@ def get_audit_logs():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM audit_logs ORDER BY id DESC")
+    cur.execute("SELECT user, action, timestamp FROM audit_logs ORDER BY id DESC")
     rows = cur.fetchall()
 
     conn.close()
 
-    return [
-        {
-            "id": r[0],
-            "user": r[1],
-            "action": r[2],
-            "incident_id": r[3],
-            "timestamp": r[4]
-        }
-        for r in rows
-    ]
+    logs = []
+    for r in rows:
+        logs.append({
+            "user": r[0],
+            "action": r[1],
+            "timestamp": r[2]
+        })
+
+    return logs
+
+
+# ---------------- 🩺 DOCTOR REVIEW (NEW) ----------------
+def save_doctor_review(incident_id, data):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    # Save review
+    cur.execute("""
+        INSERT INTO doctor_reviews (incident_id, doctor, notes, timestamp)
+        VALUES (?, ?, ?, ?)
+    """, (
+        incident_id,
+        data.get("doctor"),
+        data.get("notes"),
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ))
+
+    # Update status in incidents table
+    cur.execute("""
+        UPDATE incidents
+        SET status = 'DOCTOR_REVIEWED'
+        WHERE id = ?
+    """, (incident_id,))
+
+    conn.commit()
+    conn.close()
+
+
+def get_doctor_review(incident_id):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT doctor, notes, timestamp
+        FROM doctor_reviews
+        WHERE incident_id = ?
+        ORDER BY id DESC LIMIT 1
+    """, (incident_id,))
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row:
+        return f"Doctor: {row[0]}\nNotes: {row[1]}\nTime: {row[2]}"
+    
+    return "No doctor review yet"

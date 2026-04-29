@@ -82,44 +82,44 @@ A **centralised clinical incident management system** that unifies all workflows
 
 ---
 
-## ⚙️ Tech Stack
+---
 
-| Layer      | Technology |
-|------------|------------|
-| Backend    | Python, Flask |
-| Frontend   | HTML, CSS, JavaScript |
-| Templates  | Jinja2 |
-| Database   | SQLite |
-| Auth       | Session-based login |
+## ☁️ Cloud Enhancement Vision
+
+This system is designed with a clear path toward becoming a **fully cloud-based healthcare platform**.
+
+### 🚀 Why Cloud?
+
+Aged care environments often operate across multiple facilities, which requires:
+- Centralised data access
+- Real-time updates across locations
+- Secure and scalable infrastructure
+- High availability for critical systems
 
 ---
 
-## 🧠 Real-World Inspiration
+### ☁️ Proposed Cloud Architecture Evolution
 
-Built from my experience working in aged care as a PCA.
+The system can be enhanced into a cloud-native solution using platforms like **Azure or AWS**:
 
-### Key challenges observed:
-
-- Heavy reliance on phone calls for escalation  
-- Manual incident documentation  
-- Delayed communication between staff & doctors  
-- Fragmented systems across facilities  
-
-👉 This system converts these real-world issues into a working digital solution.
+- 🏥 Deploy backend using Azure App Service / AWS EC2
+- 🗄️ Migrate database to Azure SQL / AWS RDS
+- 📁 Store reports and documents in cloud storage (Blob/S3)
+- 🔐 Implement secure authentication (Azure AD / Cognito)
+- 🔔 Add real-time notifications using cloud functions (Lambda / Azure Functions)
+- 📊 Integrate analytics dashboards (Power BI / QuickSight)
 
 ---
 
-## ☁️ Future Vision — Unified Cloud Healthcare Platform
+### 🌐 Long-Term Vision
 
-This system is designed to evolve into a **cloud-based healthcare ecosystem**.
+Evolve this system into a **multi-tenant SaaS healthcare platform**:
 
----
-
-### 🔥 Current State (Problem)
-
-- 📞 Phone calls  
-- 📧 Emails  
-- 📝 Paper records  
+- Multiple aged care facilities on one platform
+- Centralised incident tracking across organisations
+- Real-time escalation workflows between staff and hospitals
+- Data-driven insights to reduce incident trends
+- Fully compliant, cloud-hosted audit system
 
 ---
 
@@ -143,18 +143,7 @@ Everything in one unified cloud system:
 - 🏥 Improved resident safety  
 - 📉 Reduced manual communication overhead  
 - ☁️ Scalable healthcare digitisation  
-
----
-
-## 👨‍💻 My Role
-
-- Designed system architecture  
-- Built Flask backend  
-- Developed full incident workflow  
-- Implemented authentication system  
-- Created audit logging module  
-- Translated real healthcare experience into software  
-
+ 
 ---
 
 ## 🏁 Outcome
@@ -164,18 +153,9 @@ Everything in one unified cloud system:
 ✔ Cloud scalability vision included  
 ✔ Strong foundation for IT/cloud transition  
 
----
+### 💡 Goal
 
-## 📬 Contact
-
-Actively seeking opportunities in Australia:
-
-- Application Support Engineer  
-- Cloud Engineer (Azure / AWS)  
-- Platform Engineer (Junior)  
-- IT Support / Systems Roles  
-
----
+To transform this project from a standalone web application into a **scalable, cloud-native healthcare platform** that supports real-world aged care operations across multiple facilities.
 
 ## 🏷️ Tech Tags
 

@@ -1,22 +1,13 @@
 from flask import request, jsonify, render_template_string
 from app import app
-from app.db import (
-    init_db,
-    add_incident,
-    get_all_incidents,
-    delete_incident_db,
-    add_audit_log,
-    get_audit_logs,
-    save_doctor_review,
-    get_doctor_review
-)
+from app.db import *
 
 init_db()
 
 current_user = {"name": "Admin"}
 
 
-# ---------------- DASHBOARD ----------------
+# ================= DASHBOARD =================
 @app.route("/")
 def home():
 
@@ -26,254 +17,521 @@ def home():
     html = """
     <html>
     <head>
-        <title>Clinical Incident Dashboard</title>
+    <title>Clinical Incident System</title>
 
-        <style>
-            body { font-family: Arial; margin:0; background:#f4f7fb; }
+    <style>
+    body {
+        margin:0;
+        font-family:'Segoe UI', Arial;
+        background:#f4f6f9;
+    }
 
-            .header {
-                background:#1f3b57;
-                color:white;
-                padding:15px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            }
+    /* TOP BAR */
+    .topbar {
+        height:60px;
+        background:white;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:0 20px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        position:fixed;
+        width:100%;
+        top:0;
+        left:0;
+        z-index:1000;
+    }
 
-            .profile {
-                width:38px;
-                height:38px;
-                border-radius:50%;
-                background:white;
-                color:#1f3b57;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-weight:bold;
-                cursor:pointer;
-                position:relative;
-            }
+    .title {
+        font-size:18px;
+        font-weight:600;
+        color:#1f3b57;
+    }
 
-            .dropdown {
-                display:none;
-                position:absolute;
-                right:0;
-                top:45px;
-                background:white;
-                border-radius:8px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.2);
-            }
+    /* PROFILE */
+    .profile {
+        position:relative;
+        cursor:pointer;
+        margin-right:40px;
+    }
 
-            .dropdown a {
-                display:block;
-                padding:10px;
-                text-decoration:none;
-                color:black;
-            }
+    .avatar {
+        width:38px;
+        height:38px;
+        border-radius:50%;
+        background:#2c5282;
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:bold;
+    }
 
-            .container { padding:20px; }
+    .dropdown {
+        display:none;
+        position:absolute;
+        right:0;
+        top:45px;
+        background:white;
+        min-width:140px;
+        border-radius:10px;
+        box-shadow:0 8px 20px rgba(0,0,0,0.12);
+        overflow:hidden;
+    }
 
-            table {
-                width:100%;
-                border-collapse:collapse;
-                background:white;
-                margin-top:10px;
-            }
+    .dropdown div {
+        padding:12px 15px;
+        cursor:pointer;
+        font-size:14px;
+    }
 
-            th, td {
-                padding:10px;
-                border-bottom:1px solid #ddd;
-            }
+    .dropdown div:hover {
+        background:#f3f4f6;
+    }
 
-            th { background:#2c5282; color:white; }
+    /* SIDEBAR */
+    .sidebar {
+        width:220px;
+        height:100vh;
+        background:#1f3b57;
+        color:white;
+        position:fixed;
+        top:60px;
+        left:0;
+    }
 
-            button {
-                padding:8px 10px;
-                cursor:pointer;
-                margin:3px;
-            }
+    .sidebar a {
+        display:block;
+        padding:14px 20px;
+        color:white;
+        text-decoration:none;
+        font-size:15px;
+    }
 
-            .modal {
-                display:none;
-                position:fixed;
-                top:0; left:0;
-                width:100%; height:100%;
-                background:rgba(0,0,0,0.5);
-            }
+    .sidebar a:hover {
+        background:#2c5282;
+    }
 
-            .modal-content {
-                background:white;
-                padding:20px;
-                width:400px;
-                margin:10% auto;
-                border-radius:10px;
-            }
+    /* MAIN */
+    .main {
+        margin-left:220px;
+        margin-top:60px;
+        padding:25px;
+    }
 
-            textarea, input {
-                width:100%;
-                padding:8px;
-                margin:6px 0;
-            }
-        </style>
+    /* CARD */
+    .card {
+        background:white;
+        padding:22px;
+        border-radius:14px;
+        box-shadow:0 3px 10px rgba(0,0,0,0.06);
+    }
 
-        <script>
-            function toggleProfile(){
-                let d = document.getElementById("dropdown");
-                d.style.display = d.style.display === "block" ? "none" : "block";
-            }
+    /* TABLE */
+    table {
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+    }
 
-            function openModal(){
-                document.getElementById("modal").style.display = "block";
-            }
+    th {
+        text-align:left;
+        padding:14px;
+        font-size:13px;
+        color:#666;
+        background:#f8fafc;
+        border-bottom:1px solid #e5e7eb;
+    }
 
-            function closeModal(){
-                document.getElementById("modal").style.display = "none";
-            }
+    td {
+        padding:14px;
+        border-bottom:1px solid #edf2f7;
+        font-size:14px;
+    }
 
-            function submitIncident(){
-                fetch('/incident', {
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({
-                        resident_name: document.getElementById("name").value,
-                        incident_type: document.getElementById("type").value,
-                        severity: document.getElementById("severity").value,
-                        description: document.getElementById("desc").value
-                    })
-                }).then(()=>location.reload());
-            }
+    tr:hover {
+        background:#f9fbfd;
+    }
 
-            function deleteIncident(id){
-                fetch('/incident/' + id, {method:'DELETE'})
-                .then(()=>location.reload());
-            }
+    /* STATUS */
+    .badge {
+        padding:6px 12px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:600;
+    }
 
-            function doctorReview(id){
-                window.open("/doctor/" + id, "_blank");
-            }
+    .open {
+        background:#fee2e2;
+        color:#b91c1c;
+    }
 
-            function viewReport(id){
-                window.open("/report/" + id, "_blank");
-            }
-        </script>
+    .reviewed {
+        background:#ffedd5;
+        color:#c2410c;
+    }
+
+    .closed {
+        background:#dcfce7;
+        color:#166534;
+    }
+
+    /* BUTTONS */
+    button {
+        border:none;
+        padding:7px 12px;
+        border-radius:7px;
+        cursor:pointer;
+        font-size:13px;
+        margin:2px;
+    }
+
+    .btn-primary {
+        background:#2c5282;
+        color:white;
+    }
+
+    .btn-primary:hover {
+        background:#1f3b57;
+    }
+
+    .btn-danger {
+        background:#dc2626;
+        color:white;
+    }
+
+    .btn-danger:hover {
+        background:#b91c1c;
+    }
+
+    /* MODAL */
+    .modal {
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.45);
+        z-index:2000;
+    }
+
+    .modal-content {
+        background:white;
+        width:440px;
+        margin:7% auto;
+        padding:24px;
+        border-radius:14px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    input, select, textarea {
+        width:100%;
+        padding:10px;
+        margin:8px 0;
+        border:1px solid #d1d5db;
+        border-radius:8px;
+        font-size:14px;
+        box-sizing:border-box;
+    }
+
+    textarea {
+        min-height:90px;
+        resize:vertical;
+    }
+
+    h3 {
+        margin:0 0 15px 0;
+        color:#1f2937;
+    }
+    </style>
+
+    <script>
+    function toggleProfile(){
+        let d = document.getElementById("dropdown");
+        d.style.display = (d.style.display === "block") ? "none" : "block";
+    }
+
+    function openModal(){
+        document.getElementById("modal").style.display = "block";
+    }
+
+    function closeModal(){
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function handleTypeChange(){
+        let type = document.getElementById("type").value;
+        let sirs = document.getElementById("sirs_type");
+
+        if(type === "SIRS"){
+            sirs.style.display = "block";
+        } else {
+            sirs.style.display = "none";
+        }
+    }
+
+    function submitIncident(){
+
+        let type = document.getElementById("type").value;
+        let finalType = type;
+
+        if(type === "SIRS"){
+            finalType = "SIRS - " + document.getElementById("sirs_type").value;
+        }
+
+        fetch('/incident', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                resident_name: document.getElementById("name").value,
+                room_no: document.getElementById("room").value,
+                incident_type: finalType,
+                description: document.getElementById("desc").value
+            })
+        }).then(()=>location.reload());
+    }
+
+    function deleteIncident(id){
+        fetch('/incident/' + id, {
+            method:'DELETE'
+        }).then(()=>location.reload());
+    }
+
+    function doctorReview(id){
+        window.open('/doctor/' + id, '_blank', 'width=700,height=650');
+    }
+
+    function viewReport(id){
+        window.open('/report/' + id, '_blank');
+    }
+
+    window.onclick = function(event){
+        let modal = document.getElementById("modal");
+        if(event.target == modal){
+            closeModal();
+        }
+    }
+    </script>
 
     </head>
 
     <body>
 
-    <div class="header">
-        <h2>🏥 Clinical Incident Dashboard</h2>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="title">🏥 Clinical Incident System</div>
 
         <div class="profile" onclick="toggleProfile()">
-            {{user[0].upper()}}
+            <div class="avatar">A</div>
 
             <div class="dropdown" id="dropdown">
-                <a href="#">Login</a>
-                <a href="#">Sign Out</a>
+                <div>👤 Login</div>
+                <div>🚪 Sign Out</div>
             </div>
         </div>
     </div>
 
-    <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <a href="/">📊 Dashboard</a>
+        <a href="/">📜 Audit Logs</a>
+    </div>
 
-        <button onclick="openModal()">➕ Create Incident</button>
+    <!-- MAIN -->
+    <div class="main">
 
-        <div class="modal" id="modal">
-            <div class="modal-content">
-                <h3>Create Incident</h3>
+        <div class="card">
 
-                <input id="name" placeholder="Resident Name">
-                <input id="type" placeholder="Type">
-                <input id="severity" placeholder="Severity">
-                <textarea id="desc" placeholder="Description"></textarea>
+            <button class="btn-primary" onclick="openModal()">➕ Create Incident</button>
 
-                <button onclick="submitIncident()">Save</button>
-                <button onclick="closeModal()">Cancel</button>
+            <!-- MODAL -->
+            <div id="modal" class="modal">
+                <div class="modal-content">
+
+                    <h3>Create New Incident</h3>
+
+                    <input id="name" placeholder="Resident Name">
+                    <input id="room" placeholder="Room Number">
+
+                    <select id="type" onchange="handleTypeChange()">
+                        <option>Fall</option>
+                        <option>Medication Error</option>
+                        <option>Behavioral Issue</option>
+                        <option>SIRS</option>
+                        <option>Other</option>
+                    </select>
+
+                    <select id="sirs_type" style="display:none;">
+                        <option>Abuse</option>
+                        <option>Neglect</option>
+                        <option>Unexplained Absence</option>
+                        <option>Psychological Harm</option>
+                    </select>
+
+                    <textarea id="desc" placeholder="Incident Description"></textarea>
+
+                    <button class="btn-primary" onclick="submitIncident()">Save</button>
+                    <button onclick="closeModal()">Cancel</button>
+
+                </div>
             </div>
+
+            <h3 style="margin-top:20px;">Incident Register</h3>
+
+            <table>
+                <tr>
+                    <th>Resident</th>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+
+                {% for i in incidents %}
+                <tr>
+                    <td>{{i.resident_name}}</td>
+                    <td>{{i.room_no}}</td>
+                    <td>{{i.incident_type}}</td>
+                    <td>{{i.description}}</td>
+                    <td>
+                        <span class="badge {% if i.status == 'OPEN' %}open{% elif i.status == 'DOCTOR_REVIEWED' %}reviewed{% else %}closed{% endif %}">
+                            {{i.status}}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-primary" onclick="doctorReview({{i.id}})">Doctor</button>
+                        <button class="btn-primary" onclick="viewReport({{i.id}})">Report</button>
+                        <button class="btn-danger" onclick="deleteIncident({{i.id}})">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
         </div>
 
-        <h3>Incidents</h3>
+    </div>
+    <!-- AUDIT LOGS -->
+        <div id="auditlogs" style="display:none;">
 
-        <table>
-            <tr>
-                <th>Resident</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
+            <div class="card">
 
-            {% for i in incidents %}
-            <tr>
-                <td>{{i.resident_name}}</td>
-                <td>{{i.incident_type}}</td>
-                <td>{{i.status}}</td>
-                <td>{{i.description}}</td>
-                <td>
-                    <button onclick="doctorReview({{i.id}})">🩺 Doctor Review</button>
-                    <button onclick="viewReport({{i.id}})">📄 Report</button>
-                    <button onclick="deleteIncident({{i.id}})">🗑</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+                <h3>Audit Logs</h3>
 
-        <h3>Audit Logs</h3>
+                <table>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Timestamp</th>
+                    </tr>
 
-        <table>
-            <tr>
-                <th>User</th>
-                <th>Action</th>
-                <th>Time</th>
-            </tr>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{log.user}}</td>
+                        <td>{{log.action}}</td>
+                        <td>{{log.timestamp}}</td>
+                    </tr>
+                    {% endfor %}
 
-            {% for l in logs %}
-            <tr>
-                <td>{{l.user}}</td>
-                <td>{{l.action}}</td>
-                <td>{{l.timestamp}}</td>
-            </tr>
-            {% endfor %}
-        </table>
+                </table>
+
+            </div>
+
+        </div>
 
     </div>
+
     </body>
     </html>
     """
 
-    return render_template_string(html, incidents=incidents, logs=logs, user=current_user["name"])
+    return render_template_string(html, incidents=incidents, logs=logs)
 
 
-# ---------------- CREATE ----------------
+# ================= CREATE =================
 @app.route("/incident", methods=["POST"])
 def create():
     data = request.get_json()
     add_incident(data)
     add_audit_log(current_user["name"], "CREATED INCIDENT")
-    return jsonify({"message": "created"})
+    return jsonify({"ok": True})
 
 
-# ---------------- DELETE ----------------
+# ================= DELETE =================
 @app.route("/incident/<int:id>", methods=["DELETE"])
 def delete(id):
     delete_incident_db(id)
     add_audit_log(current_user["name"], f"DELETED {id}")
-    return jsonify({"message": "deleted"})
+    return jsonify({"ok": True})
 
+# ================= DOCTOR REVIEW =================
+@app.route("/doctor/<int:id>", methods=["GET", "POST"])
+def doctor(id):
 
-# ---------------- DOCTOR REVIEW ----------------
-@app.route("/doctor/<int:id>")
-def doctor_page(id):
+    if request.method == "POST":
+        data = request.get_json()
+        save_doctor_review(id, data)
+        add_audit_log(current_user["name"], f"DOCTOR REVIEW {id}")
+        return jsonify({"ok": True})
+
+    review = get_doctor_review(id)
 
     return f"""
     <html>
-    <body style='font-family:Arial;padding:30px'>
-    <h2>Doctor Review</h2>
+    <head>
+    <style>
+    body {{
+        font-family:Segoe UI;
+        background:#f4f6f9;
+        padding:30px;
+    }}
 
-    <input id="doctor" placeholder="Doctor Name"><br><br>
-    <textarea id="notes" placeholder="Notes"></textarea><br><br>
+    .card {{
+        background:white;
+        padding:25px;
+        border-radius:12px;
+        max-width:650px;
+        margin:auto;
+        box-shadow:0 4px 14px rgba(0,0,0,.08);
+    }}
 
-    <button onclick="save()">Save</button>
+    input, textarea {{
+        width:100%;
+        padding:10px;
+        margin:8px 0;
+        border:1px solid #ddd;
+        border-radius:8px;
+        box-sizing:border-box;
+    }}
+
+    textarea {{
+        height:180px;
+    }}
+
+    button {{
+        background:#2c5282;
+        color:white;
+        border:none;
+        padding:10px 16px;
+        border-radius:8px;
+        cursor:pointer;
+    }}
+    </style>
+    </head>
+
+    <body>
+    <div class="card">
+
+        <h2>🩺 Doctor Review</h2>
+
+        <input id="doctor" placeholder="Doctor Name">
+
+        <textarea id="notes">{review}</textarea>
+
+        <button onclick="save()">Save Review</button>
+
+    </div>
 
     <script>
     function save(){{
@@ -281,26 +539,18 @@ def doctor_page(id):
             method:'POST',
             headers:{{'Content-Type':'application/json'}},
             body: JSON.stringify({{
-                doctor:document.getElementById('doctor').value,
-                notes:document.getElementById('notes').value
+                doctor: document.getElementById('doctor').value,
+                notes: document.getElementById('notes').value
             }})
-        }}).then(()=>alert("Saved"));
+        }}).then(()=>alert("Saved Successfully"));
     }}
     </script>
+
     </body>
     </html>
     """
 
-
-@app.route("/doctor/<int:id>", methods=["POST"])
-def save_doctor(id):
-    data = request.get_json()
-    save_doctor_review(id, data)
-    add_audit_log(current_user["name"], f"DOCTOR REVIEW {id}")
-    return jsonify({"ok": True})
-
-
-# ---------------- REPORT ----------------
+# ================= REPORT =================
 @app.route("/report/<int:id>")
 def report(id):
 
@@ -310,29 +560,58 @@ def report(id):
     for i in incidents:
         if i["id"] == id:
 
-            return f"""
-            <html><body style='font-family:Arial;padding:30px'>
-            <h2>Email Summary</h2>
+            email = f"""
+Dear Family Member,
 
-            <textarea style='width:100%;height:300px'>
-Dear Family,
+We are writing to update you regarding {i['resident_name']}.
 
-We would like to inform you about an incident involving {i['resident_name']}.
+An incident occurred today involving the following:
 
-Incident:
+Room Number: {i['room_no']}
+Incident Type: {i['incident_type']}
+
+Description:
 {i['description']}
 
-Doctor Notes:
+Clinical Review:
 {review}
 
-Regards,
-Care Team
-            </textarea>
+Current Status: {i['status']}
 
-            <br><br>
-            <button onclick="alert('Email sent')">Send</button>
+Our team is monitoring the resident closely and appropriate care has been provided.
 
-            </body></html>
+Please contact us if you have any questions.
+
+Kind regards,
+Clinical Care Team
+"""
+
+            return f"""
+            <html>
+            <body style="font-family:Segoe UI;background:#f4f6f9;padding:30px;">
+
+            <div style="background:white;padding:25px;border-radius:12px;max-width:800px;margin:auto;box-shadow:0 4px 14px rgba(0,0,0,.08);">
+
+                <h2>📄 Family Email Report</h2>
+
+                <select style="padding:10px;margin-bottom:10px;">
+                    <option>Send to Family</option>
+                    <option>Send to Manager</option>
+                </select>
+
+                <textarea style="width:100%;height:350px;padding:10px;">{email}</textarea>
+
+                <br><br>
+
+                <button onclick="alert('Email Sent Successfully')"
+                style="background:#2c5282;color:white;border:none;padding:10px 16px;border-radius:8px;">
+                Send Email
+                </button>
+
+            </div>
+
+            </body>
+            </html>
             """
 
     return "Not found"

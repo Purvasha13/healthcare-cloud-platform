@@ -1,162 +1,79 @@
-# 🏥 Clinical Incident Reporting System  
-### Aged Care Digital Transformation Platform
+# Secure Healthcare Cloud Platform
+
+## Project Overview
+
+The Secure Healthcare Cloud Platform is an independent industry-style project designed to simulate the responsibilities of a graduate Cloud Support and DevSecOps Engineer.
+
+This project focuses on building, deploying, securing, monitoring, and supporting a production-style healthcare application using free and open-source tools.
+
+The platform will include a healthcare backend API, database, containerisation, Kubernetes deployment, CI/CD automation, security scanning, monitoring dashboards, incident response documentation, and operational runbooks.
 
 ---
 
-## 🚀 Overview
+## Project Scenario
 
-A full-stack web application designed to digitise clinical incident reporting workflows in aged care facilities.
+A fictional Melbourne-based healthcare startup requires a secure platform to manage basic healthcare operations such as patients, doctors, appointments, and medical records.
 
-Built from real-world experience in aged care, where incident management is often:
-
-- 📞 Phone-call driven  
-- 📧 Email-based  
-- 📝 Paper/manual dependent  
-
-👉 This system replaces fragmented communication with a **centralised digital platform**
+As the Cloud Support and DevSecOps Engineer, my responsibility is to design and maintain the technical environment, automate deployments, monitor system health, investigate incidents, and document operational procedures.
 
 ---
 
-## 🎯 Problem
+## Objectives
 
-### Current Issues in Aged Care
-
-- Incident reporting done manually (paper / verbal)
-- Doctors & nurses rely on phone calls for updates
-- Families receive delayed or inconsistent communication
-- No single source of truth for incidents
-
----
-
-### ⚠️ Impact
-
-- Delayed escalation of critical incidents  
-- Lack of transparency and audit tracking  
-- Inefficient communication between stakeholders  
+- Build a healthcare backend API using FastAPI.
+- Connect the application to a PostgreSQL database.
+- Containerise the application using Docker.
+- Deploy services locally using Kubernetes with Minikube.
+- Automate testing and scanning using GitHub Actions.
+- Integrate security scanning using Trivy, CodeQL, and Gitleaks.
+- Configure monitoring using Prometheus and Grafana.
+- Investigate simulated production incidents.
+- Create incident reports, runbooks, and weekly engineering reports.
+- Maintain professional GitHub documentation and project tracking.
 
 ---
 
-## 💡 Solution
+## Technology Stack
 
-A **centralised clinical incident management system** that unifies all workflows into one platform.
-
-### ✔ What it enables:
-
-- Real-time incident reporting  
-- Structured doctor review workflow  
-- Audit logging for compliance  
-- Centralised communication flow  
-- Digital reporting to families & management  
-
----
-
-## 🧩 Key Features
-
-### 👩‍⚕️ Incident Management
-- Create clinical incidents (Falls, SIRS, Medication Errors, etc.)
-- View structured dashboard
-- Update & delete records
-
----
-
-### 🩺 Doctor Review Workflow
-- Clinical assessment per incident
-- Structured review notes
-- Supports escalation decisions
+| Area | Tool |
+|---|---|
+| Code Editor | Visual Studio Code |
+| Version Control | Git and GitHub |
+| Backend API | Python FastAPI |
+| Database | PostgreSQL |
+| API Testing | Postman |
+| Containers | Docker |
+| Orchestration | Minikube / Kubernetes |
+| CI/CD | GitHub Actions |
+| Security Scanning | Trivy |
+| Code Analysis | CodeQL |
+| Secret Scanning | Gitleaks |
+| Monitoring | Prometheus |
+| Dashboards | Grafana |
+| Documentation | Markdown |
+| Diagrams | diagrams.net |
 
 ---
 
-### 📊 Audit Logging System
-- Tracks system actions:
-  - Login
-  - Incident creation
-  - Deletions
-  - Clinical reviews
+## Planned Architecture
 
----
-
-### 📄 Reporting Module
-- Generates structured family reports
-- Standardised communication format
-- Improves transparency
-
----
-
----
-
-## ☁️ Cloud Enhancement Vision
-
-This system is designed with a clear path toward becoming a **fully cloud-based healthcare platform**.
-
-### 🚀 Why Cloud?
-
-Aged care environments often operate across multiple facilities, which requires:
-- Centralised data access
-- Real-time updates across locations
-- Secure and scalable infrastructure
-- High availability for critical systems
-
----
-
-### ☁️ Proposed Cloud Architecture Evolution
-
-The system can be enhanced into a cloud-native solution using platforms like **Azure or AWS**:
-
-- 🏥 Deploy backend using Azure App Service / AWS EC2
-- 🗄️ Migrate database to Azure SQL / AWS RDS
-- 📁 Store reports and documents in cloud storage (Blob/S3)
-- 🔐 Implement secure authentication (Azure AD / Cognito)
-- 🔔 Add real-time notifications using cloud functions (Lambda / Azure Functions)
-- 📊 Integrate analytics dashboards (Power BI / QuickSight)
-
----
-
-### 🌐 Long-Term Vision
-
-Evolve this system into a **multi-tenant SaaS healthcare platform**:
-
-- Multiple aged care facilities on one platform
-- Centralised incident tracking across organisations
-- Real-time escalation workflows between staff and hospitals
-- Data-driven insights to reduce incident trends
-- Fully compliant, cloud-hosted audit system
-
----
-
-### 🚀 Future State (Single Platform)
-
-Everything in one unified cloud system:
-
-- 🏥 Incident reporting (real-time)
-- 🩺 Doctor review system
-- 👨‍👩‍👧 Family communication portal
-- 📊 Audit & compliance tracking
-- 📁 Centralised document storage
-- 🔔 Automated alerts & escalation
-
----
-
-## 📈 Impact
-
-- ⏱ Faster incident response  
-- 🔐 Better accountability & audit trails  
-- 🏥 Improved resident safety  
-- 📉 Reduced manual communication overhead  
-- ☁️ Scalable healthcare digitisation  
- 
----
-
-## 🏁 Outcome
-
-✔ Real-world healthcare problem solved  
-✔ Full-stack application built  
-✔ Cloud scalability vision included  
-✔ Strong foundation for IT/cloud transition  
-
-### 💡 Goal
-
-To transform this project from a standalone web application into a **scalable, cloud-native healthcare platform** that supports real-world aged care operations across multiple facilities.
-
-## 🏷️ Tech Tags
-
-`Healthcare IT` · `Aged Care` · `Python` · `Flask` · `Cloud Computing` · `Azure` · `AWS` · `Career Transition` · `Software Engineering`
+```text
+Client / Postman
+      |
+      v
+FastAPI Healthcare Backend
+      |
+      v
+PostgreSQL Database
+      |
+      v
+Docker Containers
+      |
+      v
+Kubernetes with Minikube
+      |
+      v
+Prometheus Monitoring
+      |
+      v
+Grafana Dashboard

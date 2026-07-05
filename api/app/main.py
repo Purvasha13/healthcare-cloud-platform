@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from app.database import check_database_connection 
 app = FastAPI(
     title="Secure Healthcare Cloud Platform",
     description="Production-style Healthcare Cloud Platform built using FastAPI.",
@@ -28,3 +28,7 @@ def version():
         "version": "0.1.0",
         "environment": "development"
     }
+
+@app.get("/db-health")
+def database_health():
+    return check_database_connection()

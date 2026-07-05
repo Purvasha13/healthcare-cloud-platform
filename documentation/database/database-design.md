@@ -33,3 +33,12 @@ Stores appointment bookings between patients and doctors.
 - Connect FastAPI to PostgreSQL.
 - Create database models.
 - Build patient API endpoints.
+
+## Database Connectivity
+
+The application uses SQLAlchemy to connect to PostgreSQL.
+
+Configuration is loaded from environment variables using python-dotenv.
+
+The `/db-health` endpoint validates connectivity by executing `SELECT 1`.
+

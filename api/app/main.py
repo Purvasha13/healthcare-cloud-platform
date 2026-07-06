@@ -1,10 +1,15 @@
 from fastapi import FastAPI
-from app.database import check_database_connection 
+
+from app.database import check_database_connection
+from app.routers import patients
+
 app = FastAPI(
     title="Secure Healthcare Cloud Platform",
     description="Production-style Healthcare Cloud Platform built using FastAPI.",
     version="0.1.0"
 )
+
+app.include_router(patients.router)
 
 
 @app.get("/")
@@ -28,6 +33,7 @@ def version():
         "version": "0.1.0",
         "environment": "development"
     }
+
 
 @app.get("/db-health")
 def database_health():
